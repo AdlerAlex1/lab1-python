@@ -8,8 +8,8 @@
 
 ```bash
 python3 -m venv .venv
-source .venv/bin/activate    # Windows: .venv\Scripts\activate
-pip install -e ".[dev]" #Кавычки вокруг ".[dev]" обязательны — иначе shell неправильно передаст аргумент.
+source .venv/bin/activate    # Windows(CMD): .venv\Scripts\activate.bat
+pip install -e ".[dev]" # Кавычки вокруг ".[dev]" обязательны — иначе shell неправильно передаст аргумент.
 ```
 
 ## Использование
@@ -18,16 +18,16 @@ pip install -e ".[dev]" #Кавычки вокруг ".[dev]" обязатель
 
 ```bash
 python -m toolkit calc "2 + 3 * 4"
-# 14.0
+# 14
 
 python -m toolkit calc "(2 + 3) * 4"
-# 20.0
+# 20
 
 python -m toolkit calc "10 // 3"
-# 3.0
+# 3
 
 python -m toolkit calc "10 % 3"
-# 1.0
+# 1
 ```
 
 Поддерживаются: `+`, `-`, `*`, `/`, `//`, `%`, скобки, унарные `+` и `-`.
@@ -36,7 +36,7 @@ python -m toolkit calc "10 % 3"
 
 ```bash
 python -m toolkit calc -- "-5 + 3"
-# -2.0
+# -2
 ```
 
 ### Конвертер
