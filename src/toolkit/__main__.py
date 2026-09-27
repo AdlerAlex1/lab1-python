@@ -6,6 +6,12 @@ from .converter import convert
 from .errors import CalculatorError, ConversionError
 
 
+def format_number(value: float) -> str:
+    """Убирает .0 у целых чисел, оставляет дробные как есть."""
+    if value == int(value):
+        return str(int(value))
+    return str(value)
+
 def main():
     parser = argparse.ArgumentParser(
         prog='toolkit',
@@ -22,7 +28,7 @@ def main():
     calc = sub.add_parser(
         'calc',
         help='вычислить арифметическое выражение',
-        description='Вычисляет выражение с операторами + - * / и скобками.',
+        description='Вычисляет выражение с операторами + - * / и скобками а также // и %. Поддерживаются унарные + и -.',
     )
     calc.add_argument(
         'expression',
@@ -58,7 +64,7 @@ def main():
 
     try:
         if args.command == 'calc':
-            print(calculate(args.expression))
+            print(format_number(calculate(args.expression)))
         elif args.command == 'convert':
             print(convert(args.value, args.from_unit, args.to_unit))
         sys.exit(0)

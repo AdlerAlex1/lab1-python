@@ -3,7 +3,7 @@ import sys
 
 
 def run_cli(*args):
-    """Хелпер: запускает CLI и возвращает CompletedProcess."""
+    #Хелпер запускает CLI и возвращает CompletedProcess
     return subprocess.run(
         [sys.executable, "-m", "toolkit", *args],
         capture_output=True,
@@ -15,7 +15,7 @@ def run_cli(*args):
 def test_cli_calc_success():
     result = run_cli("calc", "2 + 2")
     assert result.returncode == 0
-    assert "4.0" in result.stdout
+    assert "4" in result.stdout
 
 
 def test_cli_calc_error_exit_code():

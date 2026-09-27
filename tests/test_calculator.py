@@ -2,13 +2,12 @@ import pytest
 
 from toolkit.calculator import calculate
 from toolkit.errors import (
+    ConsecutiveOperatorsError,
+    DivisionByZeroError,
     EmptyExpressionError,
     InvalidCharacterError,
     MissingOperandError,
-    ConsecutiveOperatorsError,
-    DivisionByZeroError,
 )
-
 
 # ---------- Позитивные ----------
 
@@ -33,7 +32,7 @@ def test_priority():
     assert calculate("2 + 3 * 4") == 14.0
 
 
-def test_parentheses():
+def test_skobka():
     assert calculate("(2 + 3) * 4") == 20.0
 
 
@@ -111,5 +110,5 @@ def test_negative_floor_division():
     assert calculate("-10 // 3") == -4.0
 
 
-def test_negative_modulo():
+def test_negative_modul():
     assert calculate("-10 % 3") == 2.0

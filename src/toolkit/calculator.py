@@ -1,3 +1,7 @@
+"""Калькулятор арифметических выражений."""
+
+from __future__ import annotations
+
 from .errors import (
     ConsecutiveOperatorsError,
     DivisionByZeroError,
@@ -7,7 +11,7 @@ from .errors import (
 )
 
 
-def tokenize(expression: str): # токенизация
+def tokenize(expression: str) -> list:
     if not expression or not expression.strip():
         raise EmptyExpressionError("Пустое выражение")
 
@@ -22,6 +26,7 @@ def tokenize(expression: str): # токенизация
             i += 1
             continue
 
+        # число
         if ch.isdigit() or ch == '.':
             j = i
             while j < n and (expression[j].isdigit() or expression[j] == '.'):
@@ -34,6 +39,7 @@ def tokenize(expression: str): # токенизация
             i = j
             continue
 
+        # // раньше одиночного /
         if ch == '/' and i + 1 < n and expression[i + 1] == '/':
             tokens.append(('OP', '//'))
             i += 2
@@ -49,23 +55,22 @@ def tokenize(expression: str): # токенизация
     return tokens
 
 
-def validate(tokens): #ВАЛИДАЦИЯ
+def validate(tokens: list) -> None:
     if not tokens:
         raise EmptyExpressionError("Пустое выражение")
 
-    binary = {'+', '-', '*', '/', '%', '//'}
+    binary = {'+', '-', '*', '/', '//', '%'}
     prev = None
 
     for typ, val in tokens:
         if typ == 'OP' and val in binary:
-            is_first = prev is None
-            prev_is_binary = prev is not None and prev[0] == 'OP' and prev[1] in binary
-            prev_is_open_paren = prev is not None and prev[0] == 'OP' and prev[1] == '('
-
-            if is_first or prev_is_binary:
-                is_unary = val in '+-' and (is_first or prev_is_binary or prev_is_open_paren)
-                if not is_unary:
-                    raise ConsecutiveOperatorsError("Два оператора подряд")
+            misplaced = prev is None or (prev[0] == 'OP' and prev[1] in binary)
+            is_unary = val in '+-' and (
+                prev is None
+                or (prev[0] == 'OP' and prev[1] in binary | {'('})
+            )
+            if misplaced and not is_unary:
+                raise ConsecutiveOperatorsError("Два оператора подряд")
         prev = (typ, val)
 
     if tokens[-1][0] == 'OP' and tokens[-1][1] != ')':
@@ -73,27 +78,30 @@ def validate(tokens): #ВАЛИДАЦИЯ
 
 
 class Parser:
-    def __init__(self, tokens):
+    """Рекурсивный спуск: expr -> term -> factor."""
+
+    def __init__(self, tokens: list) -> None:
         self.tokens = tokens
         self.pos = 0
 
-    def peek(self): # 'смотрим' на токен
+    def peek(self):
         return self.tokens[self.pos] if self.pos < len(self.tokens) else (None, None)
 
-    def consume(self, expected=None): # 'забираем' токен и движемся вперед
+    def consume(self, expected: str | None = None):
         typ, val = self.peek()
         if expected is not None and val != expected:
             raise MissingOperandError(f"Ожидался {expected}")
         self.pos += 1
         return typ, val
 
-    def parse(self):
+    def parse(self) -> float:
         result = self.expr()
         if self.pos < len(self.tokens):
             raise InvalidCharacterError("Лишние токены")
         return result
-# структура рекурсивного спуска
-    def expr(self): 
+
+    # + и - (низкий приоритет)
+    def expr(self) -> float:
         left = self.term()
         while True:
             typ, val = self.peek()
@@ -105,7 +113,8 @@ class Parser:
                 break
         return left
 
-    def term(self):
+    # *, /, //, % (высокий приоритет)
+    def term(self) -> float:
         left = self.factor()
         while True:
             typ, val = self.peek()
@@ -130,20 +139,25 @@ class Parser:
                 break
         return left
 
-    def factor(self):
+    # числа, скобки, унарные +/-
+    def factor(self) -> float:
         typ, val = self.peek()
+
         if typ == 'OP' and val in '+-':
             self.consume()
-            operand = self.factor() #РЕКУРСИЯ! вызываем factor() снова
+            operand = self.factor()
             return operand if val == '+' else -operand
+
         if typ == 'OP' and val == '(':
             self.consume('(')
             result = self.expr()
             self.consume(')')
             return result
+
         if typ == 'NUMBER':
             self.consume()
             return val
+
         raise MissingOperandError("Ожидался операнд")
 
 
